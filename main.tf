@@ -74,6 +74,13 @@ resource "kubernetes_deployment" "deployment" {
             failure_threshold     = 3
           }
         }
+
+        // We might need at least one volume to make automounting the service
+        // token work
+        volume {
+          name = "${var.app_name}-data"
+        }
+
         service_account_name = var.app_name
       }
     }
@@ -225,7 +232,7 @@ resource "kubernetes_service_account" "account" {
     }
   }
 
-  automount_service_account_token = "true"
+  automount_service_account_token = true
 }
 
 // Step 2: Make a role
@@ -243,11 +250,13 @@ data "aws_eks_cluster" "cluster" {
   name = var.eks_cluster_name
 }
 
+data "aws_caller_identity" "current" {}
+
 locals {
   # Trim the https:// prefix from the OIDC issuer value to get an issuer
   # identifier. This is just the format that AWS expects.
   oidc_issuer_id = replace(data.aws_eks_cluster.cluster.identity.0.oidc.0.issuer, "https://", "")
-
+  oidc_arn = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:oidc-provider/${local.oidc_issuer_id}"
 }
 
 data "aws_iam_policy_document" "permit_kubernetes_assume_role" {
@@ -256,20 +265,14 @@ data "aws_iam_policy_document" "permit_kubernetes_assume_role" {
     actions = ["sts:AssumeRoleWithWebIdentity"]
     principals {
       type        = "Federated"
-      identifiers = [local.oidc_issuer_id]
-    }
-
-    condition {
-      test     = "StringEquals"
-      variable = "${local.oidc_issuer_id}:sub"
-      values   = ["system:serviceaccount:kube-system:aws-node"]
+      identifiers = [local.oidc_arn]
     }
   }
 }
 
 // Step 4: Attach IAM policies to the role we created.
 resource "aws_iam_policy" "policy" {
-  name   = "hopDev-${var.app_name}-k8s"
+  name   = "hopDev-k8s-${var.app_name}"
   policy = var.iam_policy_json
 }
 
