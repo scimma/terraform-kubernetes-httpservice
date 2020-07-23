@@ -79,6 +79,7 @@ resource "kubernetes_deployment" "deployment" {
         // token work
         volume {
           name = "${var.app_name}-data"
+          empty_dir {}
         }
 
         service_account_name = var.app_name
@@ -256,7 +257,7 @@ locals {
   # Trim the https:// prefix from the OIDC issuer value to get an issuer
   # identifier. This is just the format that AWS expects.
   oidc_issuer_id = replace(data.aws_eks_cluster.cluster.identity.0.oidc.0.issuer, "https://", "")
-  oidc_arn = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:oidc-provider/${local.oidc_issuer_id}"
+  oidc_arn       = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:oidc-provider/${local.oidc_issuer_id}"
 }
 
 data "aws_iam_policy_document" "permit_kubernetes_assume_role" {
