@@ -50,6 +50,10 @@ resource "kubernetes_deployment" "deployment" {
             name  = "SCIMMA_ADMIN_PROD"
             value = "True"
           }
+          env {
+            name  = "KAFKA_USER_AUTH_GROUP"
+            value = "$(var.user_auth_group)"
+          }
 
           resources {
             limits {

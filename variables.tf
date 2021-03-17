@@ -33,6 +33,15 @@ EOT
   type        = string
 }
 
+variable "user_auth_group" {
+  description = <<EOT
+The name of the COmanage/LDAP group to which users must belong to be allowed to
+use the application.
+EOT
+  type        = string
+  default     = "kafkaUsers"
+}
+
 variable "standard_tags" {
   description = <<EOT
 Standard tags for all SCIMMA resources.
