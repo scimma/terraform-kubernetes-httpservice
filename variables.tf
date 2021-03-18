@@ -33,6 +33,15 @@ EOT
   type        = string
 }
 
+variable "env_vars" {
+  type = list(object({
+    name  = string
+    value = string
+  }))
+  default = []
+  description = "Environment variables to provide to the application container"
+}
+
 variable "standard_tags" {
   description = <<EOT
 Standard tags for all SCIMMA resources.
