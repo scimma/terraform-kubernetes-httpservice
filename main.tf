@@ -1,6 +1,6 @@
 terraform {
   required_providers {
-    kubernetes = ">0.0.0"
+    kubernetes = "=1.13"
     aws        = ">0.0.0"
   }
 }
