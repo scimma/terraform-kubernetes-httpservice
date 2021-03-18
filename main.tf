@@ -46,9 +46,14 @@ resource "kubernetes_deployment" "deployment" {
         container {
           name  = var.app_name
           image = var.container_image
-          env {
-            name  = "SCIMMA_ADMIN_PROD"
-            value = "True"
+
+          dynamic "env" {
+              for_each = var.env_vars
+              iterator = x
+              content {
+                  name  = x.name
+                  value = x.value
+              }
           }
 
           resources {
