@@ -71,6 +71,15 @@ resource "kubernetes_deployment" "deployment" {
               path = var.healthcheck_path
               port = 80
 
+              dynamic "httpHeaders" {
+                for_each = var.healthcheck_headers
+                iterator = header
+                content {
+                  name  = header.value["name"]
+                  value = header.value["value"]
+                }
+              }
+
             }
             period_seconds        = 10
             initial_delay_seconds = 15
