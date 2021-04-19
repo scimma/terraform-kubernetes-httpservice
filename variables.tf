@@ -33,6 +33,19 @@ EOT
   type        = string
 }
 
+variable "healthcheck_headers" {
+  type = list(object({
+    name  = string
+    value = string
+  }))
+  default = []
+  description = <<EOT
+HTTP headers to be set on healthcheck requests.
+See https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/#http-probes
+for documentation, including the default headers.
+EOT
+}
+
 variable "env_vars" {
   type = list(object({
     name  = string
