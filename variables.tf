@@ -136,3 +136,31 @@ variable "resource_requests" {
     memory = "50Mi"
   }
 }
+
+variable "route53_internal_zone_id" {
+  description = <<EOT
+
+The ID of an internal Route53 DNS zone.
+This is optional, and if left empty, no DNS record will be created in an internal zone.
+Creating a record in an internal zone is needed only if other services must be
+able to resolve this service using its external name.
+If needed, this should usually be the hopInternalDnsZoneId from network module.
+If you want to be a bit more robust, you can load it like this:
+
+  data "terraform_remote_state" "network" {
+    backend = "s3"
+    config = {
+      bucket = var.stateBucketPrefix
+      key    = "network"
+      region = var.awsRegion
+    }
+  }
+
+  locals {
+    internal_zone_id = data.terraform_remote_state.network.outputs.hopInternalDnsZoneId
+  }
+
+EOT
+  default     = ""
+  type        = string
+}
