@@ -204,6 +204,15 @@ resource "aws_route53_record" "external_dns" {
   records = kubernetes_service.load_balancer.load_balancer_ingress[*].hostname
 }
 
+resource "aws_route53_record" "internal_dns" {
+  count   = var.route53_internal_zone_id!="" ? 1 : 0
+  zone_id = var.route53_internal_zone_id
+  name    = local.hostname
+  type    = "CNAME"
+  ttl     = "5"
+  records = kubernetes_service.load_balancer.load_balancer_ingress[*].hostname
+}
+
 /* IAM:
 
 See https://docs.aws.amazon.com/eks/latest/userguide/iam-roles-for-service-accounts.html
