@@ -163,9 +163,11 @@ resource "kubernetes_ingress" "ingress" {
   metadata {
     name = "${var.app_name}-ingress"
     annotations = {
-      "ingress.kubernetes.io/rewrite-target" = "/",
-      "kubernetes.io/ingress.class"          = "alb"
-      "alb.ingress.kubernetes.io/scheme"     = "internet-facing"
+      "ingress.kubernetes.io/rewrite-target"   = "/",
+      "kubernetes.io/ingress.class"            = "alb"
+      "alb.ingress.kubernetes.io/scheme"       = "internet-facing"
+      "alb.ingress.kubernetes.io/listen-ports" = "[{\"HTTP\": 80}, {\"HTTPS\":443}]"
+      "alb.ingress.kubernetes.io/actions.ssl-redirect" = "{\"Type\": \"redirect\", \"RedirectConfig\": { \"Protocol\": \"HTTPS\", \"Port\": \"443\", \"StatusCode\": \"HTTP_301\"}}"
     }
   }
 
@@ -177,6 +179,19 @@ resource "kubernetes_ingress" "ingress" {
 
     tls {
       hosts = [local.hostname]
+    }
+
+    rule {
+      http {
+        path {
+          path = "/*"
+          backend {
+            serviceName = "ssl-redirect"
+            servicePort = "use-annotation"
+          }
+        }
+      }
+
     }
 
     rule {
