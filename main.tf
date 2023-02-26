@@ -1,7 +1,7 @@
 terraform {
   required_providers {
     kubernetes = "=1.13.3"
-    aws        = ">0.0.0"
+    aws        = ">=4.0.0"
   }
 }
 
@@ -113,16 +113,25 @@ resource "aws_acm_certificate" "cert" {
 }
 
 resource "aws_route53_record" "cert_validation" {
-  name    = aws_acm_certificate.cert.domain_validation_options.0.resource_record_name
-  type    = aws_acm_certificate.cert.domain_validation_options.0.resource_record_type
-  zone_id = var.route53_zone_id
-  records = [aws_acm_certificate.cert.domain_validation_options.0.resource_record_value]
-  ttl     = "60"
+  for_each = {
+    for dv in aws_acm_certificate.cert.domain_validation_options : dv.domain_name => {
+      name   = dv.resource_record_name
+      record = dv.resource_record_value
+      type   = dv.resource_record_type
+    }
+  }
+
+  allow_overwrite = true
+  name            = each.value.name
+  records         = [each.value.record]
+  ttl             = 60
+  type            = each.value.type
+  zone_id         = var.route53_zone_id
 }
 
 resource "aws_acm_certificate_validation" "validation" {
   certificate_arn         = aws_acm_certificate.cert.arn
-  validation_record_fqdns = [aws_route53_record.cert_validation.fqdn]
+  validation_record_fqdns = [for record in aws_route53_record.cert_validation : record.fqdn]
 }
 
 
