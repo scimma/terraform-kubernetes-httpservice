@@ -56,11 +56,11 @@ resource "kubernetes_deployment" "deployment" {
           }
 
           resources {
-            limits {
+            limits = {
               cpu    = var.resource_limits.cpu
               memory = var.resource_limits.memory
             }
-            requests {
+            requests = {
               cpu    = var.resource_requests.cpu
               memory = var.resource_requests.memory
             }
@@ -168,7 +168,7 @@ resource "kubernetes_service" "load_balancer" {
   }
 }
 
-resource "kubernetes_ingress" "ingress" {
+resource "kubernetes_ingress_v1" "ingress" {
   metadata {
     name = "${var.app_name}-ingress"
     annotations = {
@@ -181,9 +181,13 @@ resource "kubernetes_ingress" "ingress" {
   }
 
   spec {
-    backend {
-      service_name = var.app_name
-      service_port = 80
+    default_backend {
+      service {
+        name = var.app_name
+        port {
+          number = 80
+        }
+      }
     }
 
     tls {
@@ -195,8 +199,12 @@ resource "kubernetes_ingress" "ingress" {
         path {
           path = "/*"
           backend {
-            service_name = "ssl-redirect"
-            service_port = "use-annotation"
+            service {
+              name = "ssl-redirect"
+              port {
+                name = "use-annotation"
+              }
+            }
           }
         }
       }
@@ -211,8 +219,12 @@ resource "kubernetes_ingress" "ingress" {
           path = "/"
 
           backend {
-            service_name = var.app_name
-            service_port = 80
+            service {
+              name = var.app_name
+              port {
+                number = 80
+              }
+            }
           }
         }
       }
@@ -225,7 +237,7 @@ resource "aws_route53_record" "external_dns" {
   name    = local.hostname
   type    = "CNAME"
   ttl     = "5"
-  records = kubernetes_service.load_balancer.load_balancer_ingress[*].hostname
+  records = [kubernetes_service.load_balancer.status[0].load_balancer[0].ingress[0].hostname]
 }
 
 resource "aws_route53_record" "internal_dns" {
@@ -234,7 +246,7 @@ resource "aws_route53_record" "internal_dns" {
   name    = local.hostname
   type    = "CNAME"
   ttl     = "5"
-  records = kubernetes_service.load_balancer.load_balancer_ingress[*].hostname
+  records = [kubernetes_service.load_balancer.status[0].load_balancer[0].ingress[0].hostname]
 }
 
 /* IAM:
