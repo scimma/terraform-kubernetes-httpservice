@@ -119,6 +119,14 @@ EOT
   default     = "dev.hop.scimma.org"
 }
 
+variable "cert_alternative_names" {
+  description = <<EOT
+A list of Subject Alternative Names which should be included on the service's certificate.
+EOT
+  type = list(string)
+  default = []
+}
+
 variable "resource_limits" {
   description = "Limits on how much CPU and memory should be accessible per instance of the service."
   type        = object({ cpu = string, memory = string })

@@ -104,6 +104,7 @@ resource "kubernetes_deployment" "deployment" {
 resource "aws_acm_certificate" "cert" {
   domain_name       = local.hostname
   validation_method = "DNS"
+  subject_alternative_names = var.cert_alternative_names
   tags = merge(var.standard_tags, {
     Name = "Certificate for ${var.app_name}"
   })
