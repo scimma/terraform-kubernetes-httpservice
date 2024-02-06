@@ -15,10 +15,18 @@ EOT
 variable "container_image" {
   description = <<EOT
 A reference to a container image that should be run as the main application.
-This image should accept HTTp traffic at port 80. An example valid value would
+This image should accept HTTP traffic at the internal port. An example valid value would
 be 'docker.io/library/httpd:latest'.
 EOT
   type        = string
+}
+
+variable "internal_port" {
+  description = <<EOT
+The port on which the application in the container is expected to listen.
+EOT
+  type        = number
+  default     = 80
 }
 
 variable "healthcheck_path" {
@@ -26,7 +34,7 @@ variable "healthcheck_path" {
 HTTP path to query to make sure that the application is healthy. This should be
 specified as a path, like "/health", not as a full URL.
 
-Kubernetes will issue an HTTP GET to this address at port 80 every 10 seconds.
+Kubernetes will issue an HTTP GET to this address at the internal port every 10 seconds.
 See the Kubernetes documentation on liveness probes for more information:
   https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/,
 EOT

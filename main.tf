@@ -69,7 +69,7 @@ resource "kubernetes_deployment" "deployment" {
           liveness_probe {
             http_get {
               path = var.healthcheck_path
-              port = 80
+              port = var.internal_port
 
               dynamic "http_header" {
                 for_each = var.healthcheck_headers
@@ -158,13 +158,13 @@ resource "kubernetes_service" "load_balancer" {
     port {
       name        = "http"
       port        = 80
-      target_port = 80
+      target_port = var.internal_port
     }
 
     port {
       name        = "https"
       port        = 443
-      target_port = 80
+      target_port = var.internal_port
     }
   }
 }
@@ -186,7 +186,7 @@ resource "kubernetes_ingress_v1" "ingress" {
       service {
         name = var.app_name
         port {
-          number = 80
+          number = var.internal_port
         }
       }
     }
@@ -223,7 +223,7 @@ resource "kubernetes_ingress_v1" "ingress" {
             service {
               name = var.app_name
               port {
-                number = 80
+                number = var.internal_port
               }
             }
           }
