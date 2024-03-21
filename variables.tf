@@ -129,10 +129,11 @@ EOT
 
 variable "cert_alternative_names" {
   description = <<EOT
-A list of Subject Alternative Names which should be included on the service's certificate.
+A mapping of Subject Alternative Names which should be included on the service's certificate to
+the IDs of route53 DNS zones in which those names reside.
 EOT
-  type = list(string)
-  default = []
+  type = map(string)
+  default = {}
 }
 
 variable "resource_limits" {

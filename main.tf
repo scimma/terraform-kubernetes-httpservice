@@ -104,7 +104,7 @@ resource "kubernetes_deployment" "deployment" {
 resource "aws_acm_certificate" "cert" {
   domain_name       = local.hostname
   validation_method = "DNS"
-  subject_alternative_names = var.cert_alternative_names
+  subject_alternative_names = keys(var.cert_alternative_names)
   tags = merge(var.standard_tags, {
     Name = "Certificate for ${var.app_name}"
   })
@@ -119,6 +119,13 @@ resource "aws_route53_record" "cert_validation" {
       name   = dv.resource_record_name
       record = dv.resource_record_value
       type   = dv.resource_record_type
+      // For each name, we look up the corresponding zone in cert_alternative_names, 
+      // or use the overall zone ID as the default if we do not find an entry.
+      // Some string operations are needed to turn the validation record name back into
+      // the original SAN.
+      zone   = lookup(var.cert_alternative_names, 
+                      trimsuffix(replace(dv.resource_record_name, "/^[^.]*[.]/", ""),"."), 
+                      var.route53_zone_id)
     }
   }
 
@@ -127,7 +134,7 @@ resource "aws_route53_record" "cert_validation" {
   records         = [each.value.record]
   ttl             = 60
   type            = each.value.type
-  zone_id         = var.route53_zone_id
+  zone_id         = each.value.zone
 }
 
 resource "aws_acm_certificate_validation" "validation" {
