@@ -54,6 +54,20 @@ for documentation, including the default headers.
 EOT
 }
 
+variable "healthcheck_rate" {
+  description = "Configuration for the rate and failure conditions of automatic liveness probing"
+  type        = object({ check_period = number,
+                         initial_delay = number,
+                         timeout_allowance = number,
+                         failure_threshold = number })
+  default = {
+    check_period = 30
+    initial_delay = 60
+    timeout_allowance = 3
+    failure_threshold = 3
+  }
+}
+
 variable "env_vars" {
   type = list(object({
     name  = string

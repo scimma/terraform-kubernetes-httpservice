@@ -81,10 +81,10 @@ resource "kubernetes_deployment" "deployment" {
               }
 
             }
-            period_seconds        = 10
-            initial_delay_seconds = 15
-            timeout_seconds       = 3
-            failure_threshold     = 3
+            period_seconds        = var.healthcheck_rate.check_period
+            initial_delay_seconds = var.healthcheck_rate.initial_delay
+            timeout_seconds       = var.healthcheck_rate.timeout_allowance
+            failure_threshold     = var.healthcheck_rate.failure_threshold
           }
         }
 
